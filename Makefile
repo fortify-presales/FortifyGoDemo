@@ -22,11 +22,11 @@ test-cover: test ## run unit tests and show test coverage information
 
 .PHONY: run
 run: ## run the API server
-	go run ${LDFLAGS} cmd/server/main.go
+	go run ${LDFLAGS} cmd/servemux-pre1.22/main.go
 
 .PHONY: build
 build:  ## build the API server binary
-	CGO_ENABLED=0 go build ${LDFLAGS} -a -o server $(MODULE)/cmd/server
+	CGO_ENABLED=0 go build ${LDFLAGS} -a -o server $(MODULE)/cmd/servemux-pre1.22
 
 .PHONY: clean
 clean: ## remove temporary files
