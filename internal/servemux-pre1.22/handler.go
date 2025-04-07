@@ -43,7 +43,7 @@ func BuildHandler() http.Handler {
 			log.Printf("Handling POST at %s\n", r.URL.Path)
 			defer r.Body.Close()
 			body, err1 := ioutil.ReadAll(r.Body)
-			if err1 != nil{
+			if err1 != nil {
 				http.Error(w, "No body provided", http.StatusBadRequest)
 				return
 			}
@@ -63,9 +63,11 @@ func BuildHandler() http.Handler {
 				"command":"` + "ping" + `",
 				"hostname":"` + jsonData.Hostname + `",
 			}`
-			file, _ := os.OpenFile("command_log.json", os.O_CREATE, os.ModePerm) 
-			defer file.Close()  
-			jsonEncoder := json.NewEncoder(file) 
+			log.Printf("Creating file 'command_log.json' with contents: %s\n", jsonString)
+			file, _ := os.OpenFile("command_log.json", os.O_CREATE, os.ModePerm)
+			defer file.Close()
+			jsonEncoder := json.NewEncoder(file)
+			jsonEncoder.SetIndent("", "  ") // Optional: Pretty-print the JSON
 			jsonEncoder.Encode(jsonString)
 			// TODO: actual ping logic can be added here
 			w.Header().Set("Content-Type", "application/json")
@@ -84,19 +86,20 @@ func BuildHandler() http.Handler {
 			// Get id from URL path
 			//
 			id := strings.TrimPrefix(r.URL.Path, "/api/v1/download/")
-			if id == "" {	
+			if id == "" {
 				http.Error(w, "Id not provided", http.StatusBadRequest)
 				return
 			}
 			//
 			// Path Manipulation : dataflow
 			//
-			filename := fmt.Sprintf("%s%c%s%c%s", os.Getenv("PWD"), os.PathSeparator, "etc", os.PathSeparator, id)
+			filename := fmt.Sprintf("%s%c%s%c%s", os.Getenv("PWD"), os.PathSeparator, "downloads", os.PathSeparator, id)
+			log.Printf("Retrieving contents of file path: %s\n", filename)
 			if _, err := os.Stat(filename); os.IsNotExist(err) {
 				http.Error(w, "File not found", http.StatusNotFound)
 				return
 			}
-    		data, _ := ioutil.ReadFile(filename)
+			data, _ := ioutil.ReadFile(filename)
 			w.Header().Set("Content-Type", "text/plain")
 			w.Write(data)
 		} else {

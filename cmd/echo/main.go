@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	h "github.com/fortify-presales/FortifyGoDemo/internal/servemux-pre1.22"
 	s "github.com/fortify-presales/FortifyGoDemo/internal/server"
+	h "github.com/fortify-presales/FortifyGoDemo/internal/echo"
 )
 
 func main() {

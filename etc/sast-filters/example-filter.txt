@@ -1,0 +1,8 @@
+# Categories that will be filtered from scan output
+#Poor Logging Practice
+
+# Specific Rule Ids to be filtered from scan output
+
+# Insecure Transport
+748B6F87-F4AB-473E-B9F1-3A6A68C18823
+

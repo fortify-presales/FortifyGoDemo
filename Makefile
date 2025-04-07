@@ -1,8 +1,11 @@
 MODULE = $(shell go list -m)
+PROJECT = $(shell basename $(MODULE))
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || echo "1.0.0")
 PACKAGES := $(shell go list ./... | grep -v /vendor/)
 LDFLAGS := -ldflags "-X main.Version=${VERSION}"
+CMDSERVER := cmd/servemux
 FORTIFYFLAGS := "-Dcom.fortify.sca.ProjectRoot=.fortify" -verbose -debug
+FORTIFYSCANFLAGS := $(FORTIFYFLAGS) -scan -rules etc/sast-custom-rules/example-custom-rules.xml -filter etc/sast-filters/example-filter.txt
 
 .PHONY: default
 default: help
@@ -22,15 +25,15 @@ test-cover: test ## run unit tests and show test coverage information
 
 .PHONY: run
 run: ## run the API server
-	go run ${LDFLAGS} cmd/servemux-pre1.22/main.go
+	go run ${LDFLAGS} $(CMDSERVER)/main.go
 
 .PHONY: build
 build:  ## build the API server binary
-	CGO_ENABLED=0 go build ${LDFLAGS} -a -o server $(MODULE)/cmd/servemux-pre1.22
+	CGO_ENABLED=0 go build ${LDFLAGS} -a -o server $(MODULE)/$(CMDSERVER)
 
 .PHONY: clean
 clean: ## remove temporary files
-	rm -rf server coverage.out coverage-all.out
+	rm -rf server coverage.out coverage-all.out .fortify "$(PROJECT).fpr"
 
 .PHONY: version
 version: ## display the version of the API server
@@ -49,5 +52,5 @@ sast-scan: ## run static application security testing
 ##	gosec -exclude=G104 ./...
 	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -clean
 	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -exclude vendor "**/*.go"
-	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -scan -rules etc/sast-custom-rules/example-custom-rules.xml 
+	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" $(FORTIFYSCANFLAGS) -f "$(PROJECT).fpr"
 
