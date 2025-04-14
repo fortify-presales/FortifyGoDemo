@@ -3,6 +3,9 @@
 
 # Specific Rule Ids to be filtered from scan output
 
-# Insecure Transport
-748B6F87-F4AB-473E-B9F1-3A6A68C18823
+# Log Forging
+FF160455-C067-430A-86B3-7865CFAD90B7
+
+# System Information Leak: Internal
+F247360A-340E-482A-912E-C4B6F057055E
 

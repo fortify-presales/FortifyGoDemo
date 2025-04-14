@@ -76,7 +76,7 @@ func BuildHandler() http.Handler {
 		//
 		// Get id from URL path
 		//
-		// PathValue is new in Go 1.22
+		// PathValue is new in Go 1.22 - Not yet supported by Fortify
 		id := r.PathValue("id")
 		if id == "" {
 			http.Error(w, "Id not provided", http.StatusBadRequest)

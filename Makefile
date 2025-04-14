@@ -3,9 +3,17 @@ PROJECT = $(shell basename $(MODULE))
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || echo "1.0.0")
 PACKAGES := $(shell go list ./... | grep -v /vendor/)
 LDFLAGS := -ldflags "-X main.Version=${VERSION}"
-CMDSERVER := cmd/servemux
 FORTIFYFLAGS := "-Dcom.fortify.sca.ProjectRoot=.fortify" -verbose -debug
 FORTIFYSCANFLAGS := $(FORTIFYFLAGS) -scan -rules etc/sast-custom-rules/example-custom-rules.xml -filter etc/sast-filters/example-filter.txt
+# Which Go Router to use  - update to one of the following:
+# - chi
+# - echo
+# - gin
+# - gorilla
+# - servemux
+# - servemux-pre1.22
+GOROUTER := chi
+CMDSERVER := cmd/$(GOROUTER)
 
 .PHONY: default
 default: help
@@ -51,6 +59,7 @@ fmt: ## run "go fmt" on all Go packages
 sast-scan: ## run static application security testing
 ##	gosec -exclude=G104 ./...
 	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -clean
-	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -exclude vendor "**/*.go"
-	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" $(FORTIFYSCANFLAGS) -f "$(PROJECT).fpr"
+	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -exclude vendor "cmd/$(GOROUTER)/*.go" "internal/$(GOROUTER)/*.go" "internal/server/*.go" 
+	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" $(FORTIFYSCANFLAGS) 
+## -f "$(PROJECT).fpr"
 
