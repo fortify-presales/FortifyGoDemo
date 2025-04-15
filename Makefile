@@ -12,7 +12,7 @@ FORTIFYSCANFLAGS := $(FORTIFYFLAGS) -scan -rules etc/sast-custom-rules/example-c
 # - gorilla
 # - servemux
 # - servemux-pre1.22
-GOROUTER := chi
+GOROUTER := gorilla
 CMDSERVER := cmd/$(GOROUTER)
 
 .PHONY: default
@@ -60,6 +60,5 @@ sast-scan: ## run static application security testing
 ##	gosec -exclude=G104 ./...
 	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -clean
 	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" -exclude vendor "cmd/$(GOROUTER)/*.go" "internal/$(GOROUTER)/*.go" "internal/server/*.go" 
-	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" $(FORTIFYSCANFLAGS) 
-## -f "$(PROJECT).fpr"
-
+	@sourceanalyzer $(FORTIFYFLAGS) -b "$(MODULE)" $(FORTIFYSCANFLAGS) -f "$(PROJECT).fpr"
+	@FPRUtility -information -categoryIssueCounts -project "$(PROJECT).fpr" 

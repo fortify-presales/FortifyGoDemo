@@ -4,7 +4,7 @@ import (
 	"log"
 
 	s "github.com/fortify-presales/FortifyGoDemo/internal/server"
-	h "github.com/fortify-presales/FortifyGoDemo/internal/gin"
+	h "github.com/fortify-presales/FortifyGoDemo/internal/gorilla"
 	
 )
 
