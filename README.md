@@ -1,6 +1,7 @@
 # Fortify Go Demo
 
-This is an example insecure [Go](https://go.dev/) application that can be used for the demonstration of Application Security testing tools, such as [OpenText Application Security](https://www.opentext.com/products/application-security). 
+This is an example insecure [Go](https://go.dev/) application that can be used for the demonstration of Application Security testing tools, such as [OpenText Application Security](https://www.opentext.com/products/application-security). It is designed for testing
+that security issues can be found when using different Go "routers", e.g. servemux, gorilla, gin, chi, echo.
 
 Pre-requisities
 ---------------
@@ -35,17 +36,39 @@ curl -X POST -H 'Content-Type: application/json' -d '{"hostname":"localhost"}' -
 Scan Application
 ----------------
 
-To scan the application using a local OpenText Static Application Security Testing (Fortify) install:
+To scan the application using a local OpenText Static Application Security Testing (Fortify) instance edit the
+`Makefile` and change the following line:
+
+```
+GOROUTER := servemux
+```
+
+to the Go router that you want to use, then run a SAST scan using:
 
 ```
 make sast-scan
 ```
 
-and the file `FortifyGoDemo.fpr` should be created. You can view the results using `auditworkbench`:
+The file `FortifyGoDemo.fpr` should be created. You can view the results using `auditworkbench`:
 
 ```
 auditworkbench FortifyGoDemo.fpr
 ```
+
+For each Go router, 3 results should be found, for example with "servemux":
+
+```
+Issue counts by category:
+
+ "Command Injection" => 1 Issues
+ "JSON Injection" => 1 Issues
+ "Path Manipulation" => 1 Issues
+
+Total for all categories => 3 Issues
+```
+
+An updated rule in `etc\example-custom-rules.xml` has been provided for "servemux" to make this work - no other rules have been
+implemented as yet.
 
 ---
 

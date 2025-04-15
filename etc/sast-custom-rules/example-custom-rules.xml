@@ -6,9 +6,9 @@
     <Name><![CDATA[]]></Name>
     <Version>1.0</Version>
     <Description><![CDATA[]]></Description>
-    <Rules version="24.4.0">
+    <Rules version="3.2">
         <RuleDefinitions>
-         <DataflowSourceRule formatVersion="24.4.0" language="golang">
+         <DataflowSourceRule formatVersion="19.2" language="golang">
             <RuleID>953fa3c9-ea45-4e0b-b955-8ccd26a6455a</RuleID>
             <MetaInfo>
                <Group name="package">Go net</Group>
@@ -30,5 +30,13 @@
             </FunctionIdentifier>
             <OutArguments>return</OutArguments>
          </DataflowSourceRule>
+        </RuleDefinitions>
+        <ScriptDefinitions>
+            <ScriptDefinition formatVersion="21.2" type="lib" name="extra_logging"><![CDATA[
+                function dbg(msg){
+                    alert(msg)
+                }
+                ]]></ScriptDefinition>
+        </ScriptDefinitions>
     </Rules>
 </RulePack>

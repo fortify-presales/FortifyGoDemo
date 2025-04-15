@@ -1,5 +1,5 @@
 # Categories that will be filtered from scan output
-#Poor Logging Practice
+Insecure Transport
 
 # Specific Rule Ids to be filtered from scan output
 
