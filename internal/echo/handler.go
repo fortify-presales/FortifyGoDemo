@@ -9,26 +9,26 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 )
 
 // BuildHandler sets up the HTTP routing and builds an HTTP handler.
 func BuildHandler() http.Handler {
-	router := mux.NewRouter()
+	router :=  echo.New()
 
 	// Create a sub router for the API Version
-	v1 := router.PathPrefix("/api/v1").Subrouter()
-
+	v1 := router.Group("/api/v1")
+	
 	// GET request with data flow taint source in URL path
-	v1.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Handling GET at %s\n", r.URL.Path)
+	v1.GET("/ping", func(c echo.Context) error {
+		log.Printf("Handling GET at %s\n", c.Request().URL.Path)
 		//
 		// Get hostname from query parameter
 		//
-		host := r.URL.Query().Get("hostname")
+		// echo c.QueryParam - Not yet supported by Fortify
+		host := c.QueryParam("hostname")
 		if host == "" {
-			http.Error(w, "Hostname not provided", http.StatusBadRequest)
-			return
+			return c.String(http.StatusBadRequest, "Hostname not provided")
 		}
 		//
 		// Command Injection : dataflow
@@ -36,25 +36,22 @@ func BuildHandler() http.Handler {
 		cmd := exec.Command("ping", "-c", "4", host)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Error: %s", err), http.StatusInternalServerError)
-			return
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err))
 		}
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write(output)
-	}).Methods("GET")
+		return c.HTML(http.StatusOK, fmt.Sprintf("<pre>%s</pre>", output))
+	})
 
 	// POST request with data flow taint source in body
-	v1.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Handling POST at %s\n", r.URL.Path)
+	v1.POST("/ping", func(c echo.Context) error {
+		log.Printf("Handling POST at %s\n", c.Request().URL.Path)
 		type JsonString struct {
 			Hostname string `json:"hostname"`
 		}
 		var jsonDataToRead JsonString
 		//err2 := json.Unmarshal(body, &jsonData)
-		err := json.NewDecoder(r.Body).Decode(&jsonDataToRead)
+		err := json.NewDecoder(c.Request().Body).Decode(&jsonDataToRead)
 		if err != nil {
-			http.Error(w, "Hostname not provided", http.StatusBadRequest)
-			return
+			return c.String(http.StatusBadRequest, "Hostname not provided")
 		}
 		//
 		// JSON Injection : dataflow
@@ -71,21 +68,20 @@ func BuildHandler() http.Handler {
 		jsonEncoder.SetIndent("", "  ") // Optional: Pretty-print the JSON
 		jsonEncoder.Encode(jsonDataToWrite)
 		// TODO: actual ping logic can be added here and output placed in "jsonDataToWrite"
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-	}).Methods("POST")
+		return c.JSONPretty(http.StatusOK, jsonDataToWrite, "  ")
+	})
 
 	// GET request with data flow taint source in URL path
-	v1.HandleFunc("/download/{id}", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Handling GET at %s\n", r.URL.Path)
+	v1.GET("/download/:id", func(c echo.Context) error {
+		log.Printf("Handling GET at %s\n", c.Request().URL.Path)
 		//
 		// Get id from URL path
 		//
-		// gorilla mux.Vars - Not yet supported by Fortify
-		id := mux.Vars(r)["id"]
+		// echo c.Param - Not yet supported by Fortify
+		id := c.Param("id")
 		if id == "" {
-			http.Error(w, "Id not provided", http.StatusBadRequest)
-			return
+			return c.String(http.StatusBadRequest, "Id not provided")
+
 		}
 		//
 		// Path Manipulation : dataflow
@@ -93,13 +89,11 @@ func BuildHandler() http.Handler {
 		filename := fmt.Sprintf("%s%c%s%c%s", os.Getenv("PWD"), os.PathSeparator, "downloads", os.PathSeparator, id)
 		log.Printf("Retrieving contents of file path: %s\n", filename)
 		if _, err := os.Stat(filename); os.IsNotExist(err) {
-			http.Error(w, "File not found", http.StatusNotFound)
-			return
+			return c.String(http.StatusNotFound, "File not found")
 		}
 		data, _ := ioutil.ReadFile(filename)
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write(data)
-	}).Methods("GET")
+		return c.String(http.StatusOK, string(data))
+	})
 
 	return router
 }

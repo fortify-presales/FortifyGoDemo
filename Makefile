@@ -12,7 +12,7 @@ FORTIFYSCANFLAGS := $(FORTIFYFLAGS) -scan -rules etc/sast-custom-rules/example-c
 # - gorilla
 # - servemux
 # - servemux-pre1.22
-GOROUTER := gorilla
+GOROUTER := echo
 CMDSERVER := cmd/$(GOROUTER)
 
 .PHONY: default
